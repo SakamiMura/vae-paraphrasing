@@ -59,85 +59,139 @@ nltk.download('punkt_tab')
 
 ## 📁 Project Structure
 
-````markdown
-# Variational Autoencoder for Sentence Paraphrasing
+```
+vae-paraphrasing/
+├── src/
+│   ├── data/
+│   │   └── preprocessing.py      # Data loading and preprocessing
+│   ├── models/
+│   │   ├── components.py         # VAE encoder and decoder components
+│   │   └── vae.py               # Main VAE model class
+│   ├── training/
+│   │   ├── loss.py              # VAE loss with Free Bits
+│   │   └── trainer.py           # Training loop and utilities
+│   ├── utils/
+│   │   └── generation.py        # Paraphrase generation utilities
+│   └── evaluation/
+│       └── evaluator.py         # Model evaluation and visualization
+├── config.py                    # Configuration settings
+├── main.py                      # Main entry point
+├── quick_test.py               # Quick model verification
+├── requirements.txt            # Python dependencies
+├── .gitignore                  # Git ignore file
+└── README.md                   # This file
+```
 
-## Project Description
+## 🚀 Quick Start
 
-This project implements a Variational Autoencoder (VAE) to perform sentence paraphrasing.  
-The model is trained to encode input sentences into a latent vector and then decode them back into paraphrased versions.
+### 1. Training a New Model
 
-Key components:
-- Encoder & Decoder built with LSTM layers (PyTorch)
-- GloVe word embeddings (100 dimensions)
-- Custom loss function with KL divergence and annealing
-- Teacher Forcing technique during training
+First, ensure you have the required files (`train.csv` and `glove.6B.100d.txt`) in the project root, then:
 
-This project was built as part of my exploration of Deep Learning and Natural Language Processing.
-
----
-
-## Dataset
-
-The dataset consists of paraphrased sentence pairs.  
-**NOTE:** Dataset is not included due to size limitations.  
-You can use any paraphrase dataset (e.g. Quora Question Pairs, PAWS, or custom data).
-
-## Pre-trained embeddings
-
-The project uses pre-trained GloVe embeddings (100d).  
-You can download them from [GloVe official website](https://nlp.stanford.edu/projects/glove/).
-
-Place the embedding file in:  
-`data/glove.6B.100d.txt`
-
----
-
-## How to run
-
-1️⃣ Install dependencies:
 ```bash
-pip install -r requirements.txt
-2️⃣ Prepare data files and embeddings as described above.
+python main.py --mode train
+```
 
-3️⃣ Run training:
+This will:
+- Load and preprocess the training data
+- Build vocabulary from paraphrase pairs
+- Initialize the VAE model with GloVe embeddings
+- Train for 20 epochs with staged learning and KL annealing
+- Save the trained model as `anti_collapse_vae_model.pth`
 
-bash
-Kopiuj
-Edytuj
-python vae_paraphrasing.py
-Results
-The model trains using both reconstruction loss and KL divergence.
+### 2. Quick Model Test
 
-KL annealing was implemented to stabilize the learning process.
+After training, verify your model works correctly:
 
-Sample paraphrased sentences can be generated after training.
+```bash
+python quick_test.py
+```
 
-Technologies
-Python 3
+This script tests the model with sample sentences and confirms it's generating paraphrases properly.
 
-PyTorch
+### 3. Interactive Paraphrase Generation
 
-NumPy
+Launch the interactive mode to generate paraphrases for any input:
 
-Matplotlib
+```bash
+python main.py --mode interactive
+```
 
-GloVe embeddings
+Example session:
+```
+Enter sentence: How can I learn programming?
 
-Author
-Created by Sakami (2025)
+Original: How can I learn programming?
+Generated paraphrases:
+  1: what is the best way to learn coding
+  2: how do i start learning to program
+  3: where can i learn programming skills
+  4: what are good resources for learning programming
+  5: how to begin studying programming
+```
 
-yaml
-Kopiuj
-Edytuj
+## 🔧 Usage Modes
 
----
+### Training Mode
+```bash
+python main.py --mode train
+```
+- Trains a new VAE model from scratch
+- Requires `train.csv` and `glove.6B.100d.txt`
+- Saves model to `anti_collapse_vae_model.pth`
 
-### requirements.txt (prosty):
+### Generation Mode
+```bash
+python main.py --mode generate
+```
+- Generates paraphrases for predefined test sentences
+- Requires trained model file
 
-```txt
-torch
-numpy
-matplotlib
-tqdm
-````
+### Interactive Mode
+```bash
+python main.py --mode interactive
+```
+- Allows real-time paraphrase generation
+- Enter any sentence and get multiple paraphrases
+- Type 'quit' to exit
+
+### Evaluation Mode
+```bash
+python main.py --mode evaluate
+```
+- Plots training loss curves
+- Analyzes latent space statistics
+- Requires matplotlib for visualization
+
+## ⚙️ Configuration
+
+Modify `config.py` to adjust model parameters:
+
+```python
+# Model architecture
+EMBEDDING_DIM = 100      # GloVe embedding dimension
+HIDDEN_DIM = 256         # RNN hidden size
+LATENT_DIM = 32          # VAE latent space dimension
+
+# Training parameters
+BATCH_SIZE = 32          # Training batch size
+NUM_EPOCHS = 20          # Number of training epochs
+LEARNING_RATE = 0.001    # Initial learning rate
+
+# Data parameters
+MIN_WORD_FREQ = 5        # Minimum word frequency for vocabulary
+MAX_LEN = 90             # Maximum sequence length
+```
+
+## 🧠 Model Architecture
+
+### VAE Components
+- **Encoder**: GRU-based encoder that maps input sequences to latent distributions
+- **Decoder**: GRU-based decoder that generates sequences from latent codes
+- **Embedding Layer**: Pre-trained GloVe embeddings (frozen initially, fine-tuned later)
+
+### Anti-Collapse Techniques
+1. **Free Bits**: Prevents KL divergence from collapsing to zero
+2. **KL Annealing**: Gradually increases KL weight during training
+3. **Word Dropout**: Randomly replaces input words with `<UNK>` tokens
+4. **Staged Training**: Freezes embeddings initially, then fine-tunes
