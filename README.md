@@ -1,6 +1,6 @@
 # VAE-Based Paraphrase Generation
 
-A state-of-the-art Variational Autoencoder (VAE) implementation for generating high-quality paraphrases from input text. This project addresses the common posterior collapse problem in text VAEs through advanced techniques including Free Bits, KL annealing, and word dropout.
+Variational Autoencoder (VAE) implementation for generating high-quality paraphrases from input text. This project addresses the common posterior collapse problem in text VAEs through advanced techniques including Free Bits, KL annealing, and word dropout.
 
 ## 🚀 Features
 
